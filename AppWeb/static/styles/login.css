@@ -1,0 +1,121 @@
+/* Estilos globales */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to bottom right, #2e3a64, #3e5186, #6e73a1, #ffd14d);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  /* Contenedor del login */
+  .login-container {
+    background-color: rgba(255, 255, 255, 0.15);
+    padding: 3rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+  }
+  
+  /* Avatar */
+  .avatar img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Estilos del formulario */
+  .login-form .input-group {
+    position: relative;
+    margin-bottom: 1.2rem;
+  }
+  
+  .login-form input {
+    width: 100%;
+    padding: 0.8rem 2.5rem;  /* Espacio para el ícono */
+    font-size: 1rem;
+    border: none;
+    border-radius: 5px;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+  }
+  
+  .login-form input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+  }
+  
+  /* Íconos en los campos */
+  .login-form .input-group i {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #fff;
+  }
+  
+  /* Estilos para 'Remember me' y 'Forgot Password?' */
+  .remember-forgot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    color: #fff;
+  }
+  
+  .remember-forgot a {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+  }
+  
+  .remember-forgot a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Botón de inicio de sesión */
+  button {
+    width: 100%;
+    padding: 0.8rem;
+    font-size: 1rem;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  button:hover {
+    background-color: #555;
+  }
+  
+  .flash-messages {
+    margin: 20px 0;
+  }
+  
+  .flash {
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+  }
+  
+  .flash.success {
+    background-color: #d4edda; /* Color verde claro */
+    color: #155724; /* Texto verde */
+  }
+  
+  .flash.danger {
+    background-color: #f8d7da; /* Color rojo claro */
+    color: #721c24; /* Texto rojo */
+  }
+  
+  

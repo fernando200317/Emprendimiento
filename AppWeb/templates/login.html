@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='/styles/login.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="avatar">
+            <img src="{{ url_for('static', filename='/assets/images/avatar.png') }}" alt="Avatar">
+        </div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        <form class="login-form" method="post" onsubmit="saveRut()">
+            <div class="input-group">
+                <i class="fas fa-user"></i>
+                <input type="text" id="rut" name="rut" placeholder="rut" required>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="password" name="password" placeholder="Password" required>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+        <p>¿No tienes una cuenta? <a href="{{ url_for('register') }}">Regístrate aquí</a></p> 
+        <script>
+            function saveRut() {
+                const rut = document.getElementById('rut').value;
+                localStorage.setItem('savedRut', rut);
+            }
+        </script>
+    </div>
+</body>
+</html>
