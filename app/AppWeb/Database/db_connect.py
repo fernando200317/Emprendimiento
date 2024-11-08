@@ -4,7 +4,7 @@ from datetime import time, date
 
 # Configuración de conexión a la base de datos
 config = {'host': 'localhost', 'database_name': 'Tutoring', 'user': 'root', 'password': 'rootpass'}
-engine = create_engine(f'mysql+pymysql://{config["user"]}:{config["password"]}@{config["host"]}:3307/{config["database_name"]}', echo=False)
+engine = create_engine(f'mysql+pymysql://{config["user"]}:{config["password"]}@{config["host"]}/{config["database_name"]}', echo=False)
 
 # Crear la base de datos si no existe
 with engine.connect() as conn:
@@ -18,7 +18,7 @@ class Usuario(Base):
     RUT = Column(String(12), primary_key=True, index=True)
     nombre = Column(String(100))
     correo_electronico = Column(String(100), unique=True)
-    contraseña = Column(String(100))
+    contraseña = Column(String(512))
     tipo_usuario = Column(String(100))
 
     tutor = relationship("Tutor", back_populates="usuario", uselist=False)
