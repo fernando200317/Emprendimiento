@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página del Estudiante</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
+    <style>
+        /* Estilos de la página */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #4a3a87;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+        .profile-card, .card {
+            background-color: #f8f9fc;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .profile-card h2 {
+            margin: 0;
+            font-size: 24px;
+            color: #4a3a87;
+        }
+        .profile-card p {
+            margin: 5px 0;
+            color: #555;
+        }
+        h3 {
+            color: #4a3a87;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid #4a3a87;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        .card table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .card table th, .card table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .btn-primary, .btn-secondary {
+            display: inline-block;
+            padding: 8px 15px;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 5px 0;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        .btn-primary {
+            background-color: #4a3a87;
+        }
+        .btn-secondary {
+            background-color: #28a745;
+        }
+        .btn-primary:hover {
+            background-color: #372b63;
+        }
+        .btn-secondary:hover {
+            background-color: #218838;
+        }
+        .add-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background-color: #4a3a87;
+            color: white;
+            border-radius: 50%;
+            font-size: 18px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+            cursor: pointer;
+        }
+        .add-btn:hover {
+            background-color: #372b63;
+        }
+
+        /* Estilos para el modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 400px;
+            width: 100%;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h4 {
+            margin: 0;
+        }
+        .close-btn {
+            cursor: pointer;
+            font-size: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="profile-card">
+            <h2>Bienvenido, {{ estudiante.nombre }}</h2>
+            <p><strong>Correo electrónico:</strong> {{ estudiante.correo_electronico }}</p>
+        </div>
+
+        <div class="card">
+            <h3>Mis Materias
+                <span class="add-btn" onclick="openInscribirModal()">+</span>
+                <span class="add-btn" onclick="openDesinscribirModal()">−</span>
+            </h3>
+            {% if materias %}
+                <ul>
+                    {% for materia in materias %}
+                        <li>
+                            <strong>{{ materia.nombre_materia }}:</strong> {{ materia.descripcion }}
+                            <!-- Botón para ver detalles de la tutoría -->
+                            <a href="{{ url_for('detalle_tutoria', materia_id=materia.ID_materia) }}" class="add-btn" title="Ver detalles">🔍</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No tienes materias inscritas actualmente.</p>
+            {% endif %}
+        </div>
+
+        <!-- Modal para inscribirse en materias -->
+        <div class="modal" id="inscribirModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4>Inscribirse en una Materia</h4>
+                    <span class="close-btn" onclick="closeInscribirModal()">&times;</span>
+                </div>
+                <label for="materia_id">Materias Disponibles:</label>
+                <select name="materia_id" id="materia_id">
+                    {% for materia in materias_disponibles %}
+                        <option value="{{ materia.ID_materia }}">{{ materia.nombre_materia }} - {{ materia.descripcion }}</option>
+                    {% endfor %}
+                </select>
+                <button onclick="submitInscripcion()" class="btn-primary">Inscribirse</button>
+            </div>
+        </div>
+
+        <!-- Modal para desinscribirse de materias -->
+        <div class="modal" id="desinscribirModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4>Desinscribirse de una Materia</h4>
+                    <span class="close-btn" onclick="closeDesinscribirModal()">&times;</span>
+                </div>
+                <label for="materia_id_desinscribir">Materias Inscritas:</label>
+                <select name="materia_id_desinscribir" id="materia_id_desinscribir">
+                    {% for materia in materias %}
+                        <option value="{{ materia.ID_materia }}">{{ materia.nombre_materia }} - {{ materia.descripcion }}</option>
+                    {% endfor %}
+                </select>
+                <button onclick="submitDesinscripcion()" class="btn-secondary">Desinscribirse</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openInscribirModal() {
+            document.getElementById("inscribirModal").style.display = "flex";
+        }
+
+        function closeInscribirModal() {
+            document.getElementById("inscribirModal").style.display = "none";
+        }
+
+        function openDesinscribirModal() {
+            document.getElementById("desinscribirModal").style.display = "flex";
+        }
+
+        function closeDesinscribirModal() {
+            document.getElementById("desinscribirModal").style.display = "none";
+        }
+
+        function submitInscripcion() {
+            const materiaId = document.getElementById("materia_id").value;
+            fetch("{{ url_for('inscribir_materia_ajax') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ materia_id: materiaId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Inscripción exitosa en la materia.");
+                    closeInscribirModal();
+                    location.reload();
+                } else {
+                    alert("Error al inscribirse en la materia: " + data.error);
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+
+        function submitDesinscripcion() {
+            const materiaId = document.getElementById("materia_id_desinscribir").value;
+            fetch("{{ url_for('desinscribir_materia') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ materia_id: materiaId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Desinscripción exitosa de la materia.");
+                    closeDesinscribirModal();
+                    location.reload();
+                } else {
+                    alert("Error al desinscribirse de la materia: " + data.error);
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+    </script>
+</body>
+</html>

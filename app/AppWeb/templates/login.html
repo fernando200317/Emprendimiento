@@ -3,42 +3,189 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='/styles/login.css') }}">
+    <title>Login | TutorFlex</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        /* Fondo general */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #4a3a87, #2a2d4d);
+            color: #333;
+        }
+
+        /* Contenedor principal */
+        .login-container {
+            background: #ffffff;
+            width: 700px; /* Ancho reducido */
+            max-width: 90%;
+            display: flex;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        /* Sección de avatar */
+        .avatar {
+            background-color: #f2f2f2;
+            width: 40%; /* Ancho reducido para centrar mejor */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            box-sizing: border-box;
+        }
+
+        .avatar img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        /* Formulario de inicio de sesión */
+        .login-form {
+            width: 60%; /* Ancho ajustado para centrar mejor */
+            padding: 40px 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+
+        .login-form h2 {
+            font-size: 22px;
+            color: #4a3a87;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 15px; /* Menos margen entre cuadros */
+            display: flex;
+            justify-content: center;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aaa;
+        }
+
+        .input-group input {
+            width: 80%; /* Ajuste del ancho de los cuadros de texto */
+            max-width: 300px; /* Ancho máximo para limitar el tamaño */
+            padding: 10px 40px; /* Menos padding */
+            font-size: 15px; /* Tamaño de fuente reducido */
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #4a3a87;
+        }
+
+        /* Botón de inicio de sesión */
+        .login-form button {
+            padding: 10px;
+            font-size: 16px;
+            background-color: #4a3a87;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+            width: 80%; /* Ancho del botón igual que los campos */
+            max-width: 300px; /* Limitar el tamaño máximo del botón */
+            align-self: center; /* Centrar el botón */
+        }
+
+        .login-form button:hover {
+            background-color: #372b63;
+        }
+
+        /* Enlace de registro */
+        .login-form p {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .login-form p a {
+            color: #4a3a87;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-form p a:hover {
+            text-decoration: underline;
+        }
+
+        /* Mensajes Flash */
+        .flash-messages {
+            margin-bottom: 20px;
+            color: red;
+            font-size: 14px;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
     <div class="login-container">
+        <!-- Sección Avatar -->
         <div class="avatar">
-            <img src="{{ url_for('static', filename='/assets/images/avatar.png') }}" alt="Avatar">
+            <img src="{{ url_for('static', filename='assets/images/avatar.png') }}" alt="Avatar">
         </div>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <div class="flash-messages">
-                    {% for category, message in messages %}
-                        <div class="flash {{ category }}">{{ message }}</div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
+
+        <!-- Formulario de Login -->
         <form class="login-form" method="post" onsubmit="saveRut()">
+            <h2>Iniciar Sesión</h2>
+
+            <!-- Mostrar mensajes flash -->
+            {% with messages = get_flashed_messages(with_categories=True) %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for category, message in messages %}
+                            <div class="flash-message {{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <!-- Campos de entrada -->
             <div class="input-group">
                 <i class="fas fa-user"></i>
-                <input type="text" id="rut" name="rut" placeholder="rut" required>
+                <input type="text" id="rut" name="rut" placeholder="Rut" required>
             </div>
             <div class="input-group">
                 <i class="fas fa-lock"></i>
-                <input type="password" id="password" name="password" placeholder="Password" required>
+                <input type="password" id="password" name="password" placeholder="Contraseña" required>
             </div>
             <button type="submit">Login</button>
+
+            <!-- Enlace para registrarse -->
+            <p>¿No tienes una cuenta? <a href="{{ url_for('register') }}">Regístrate aquí</a></p>
         </form>
-        <p>¿No tienes una cuenta? <a href="{{ url_for('register') }}">Regístrate aquí</a></p> 
-        <script>
-            function saveRut() {
-                const rut = document.getElementById('rut').value;
-                localStorage.setItem('savedRut', rut);
-            }
-        </script>
     </div>
+
+    <!-- Script para guardar el RUT -->
+    <script>
+        function saveRut() {
+            const rut = document.getElementById('rut').value;
+            localStorage.setItem('savedRut', rut);
+        }
+    </script>
 </body>
 </html>

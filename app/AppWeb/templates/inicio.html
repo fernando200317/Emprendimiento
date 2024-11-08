@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Landing Page | TutorFlex</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos generales */
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #f2f2f2;
+            background: #2a2d4d;
+            overflow-x: hidden;
+        }
+
+        /* Fondo con líneas diagonales */
+        .background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #2a2d4d 25%, transparent 25%) -50px 0,
+                        linear-gradient(225deg, #3e3a6d 25%, transparent 25%) -50px 0,
+                        linear-gradient(315deg, #4a3a87 25%, transparent 25%),
+                        linear-gradient(45deg, #3e3a6d 25%, #2a2d4d 25%);
+            background-size: 100px 100px;
+            opacity: 0.6;
+            z-index: -1;
+        }
+
+        /* Navbar */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 50px;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .logo-container img {
+            width: 100px; /* Tamaño duplicado del logo */
+            height: 100px;
+            border-radius: 50%; /* Hace que el logo sea redondo */
+            margin-right: 15px;
+        }
+
+        .logo-container span {
+            color: #ffd700;
+            font-size: 48px; /* Tamaño duplicado del texto del logo */
+            font-weight: bold;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-links a {
+            color: #f2f2f2;
+            text-decoration: none;
+            font-size: 18px;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #ffd700;
+        }
+
+        /* Contenido Principal */
+        .hero {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 80vh;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .hero h1 {
+            font-size: 50px;
+            color: #f2f2f2;
+            margin: 0 0 20px;
+        }
+
+        .hero p {
+            font-size: 20px;
+            max-width: 600px;
+            color: #d1d1d1;
+            margin-bottom: 40px;
+        }
+
+        .btn-cta {
+            padding: 15px 40px;
+            font-size: 20px;
+            color: #4a3a87;
+            background-color: #ffd700;
+            border: 2px solid #ffd700;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .btn-cta:hover {
+            background-color: transparent;
+            color: #ffd700;
+        }
+    </style>
+</head>
+<body>
+    <!-- Fondo decorativo -->
+    <div class="background"></div>
+
+    <!-- Navbar -->
+    <nav>
+        <!-- Logo con imagen redonda y texto ampliado -->
+        <a href="#" class="logo-container">
+            <img src="{{ url_for('static', filename='assets/images/tutorflex_logo.jpg') }}" alt="TutorFlex Logo">
+            <span>TutorFlex</span>
+        </a>
+
+        <!-- Enlaces de navegación -->
+        <ul class="nav-links">
+            <li><a href="#">Inicio</a></li>
+            <li><a href="#">Servicios</a></li>
+            <li><a href="#">Sobre Nosotros</a></li>
+            <li><a href="#">Contacto</a></li>
+            <li><a href="#">FAQ</a></li>
+        </ul>
+    </nav>
+
+    <!-- Sección Hero -->
+    <section class="hero">
+        <h1>Plataforma de Tutorías Universitarias</h1>
+        <p>Conéctate con tutores expertos y estudiantes para mejorar tu rendimiento académico. Aprende, colabora y crece en nuestra comunidad educativa.</p>
+        <a href="{{ url_for('login') }}" class="btn-cta">Comenzar</a>
+    </section>
+</body>
+</html>

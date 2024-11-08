@@ -1,9 +1,9 @@
-from sqlalchemy import text, create_engine
+from sqlite3 import IntegrityError
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
-from werkzeug.security import generate_password_hash
 import re
-
+from Database.db_connect import db_session
 
 config = {'host': 'localhost', 'database_name': 'Tutoring', 'user': 'root', 'password': 'rootpass'}
 engine = create_engine(f'mysql+pymysql://{config["user"]}:{config["password"]}@{config["host"]}/{config["database_name"]}', echo=False)
@@ -13,48 +13,34 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 def formatear_rut(rut):
-    """Formatea el RUT eliminando caracteres no numéricos y agregando guión."""
-    clean_rut = re.sub(r'\D', '', rut)  # Eliminar caracteres no numéricos
+    """Formatea el RUT eliminando caracteres no numéricos y agregando un guión."""
+    clean_rut = re.sub(r'\D', '', rut)  # Elimina caracteres no numéricos
     return f"{clean_rut[:-1]}-{clean_rut[-1]}" if len(clean_rut) > 1 else rut
 
-def crear_usuario(rut, nombre, email, password, user_type):
-    db = SessionLocal()
+def crear_usuario(rut, username, email, password, tipo_usuario):
     try:
-        # Validar y formatear datos
-        rut_formateado = formatear_rut(rut)
+        # Crear usuario en la tabla `usuario`
+        db_session.execute(
+            text("""
+                INSERT INTO usuario (RUT, nombre, correo_electronico, contraseña, tipo_usuario)
+                VALUES (:rut, :nombre, :correo_electronico, :contraseña, :tipo_usuario)
+            """),
+            {'rut': rut, 'nombre': username, 'correo_electronico': email, 'contraseña': password, 'tipo_usuario': tipo_usuario}
+        )
         
-        # Generar el hash de la contraseña con `scrypt`
-        hashed_password = generate_password_hash(password, method='scrypt')
-        print(f"Hashed password to store: {hashed_password}")  # Verificar hash generado
-
-        # Verificar si el RUT ya existe
-        if db.execute(text("SELECT 1 FROM usuario WHERE RUT = :rut"), {'rut': rut_formateado}).fetchone():
-            return False, "El RUT ya está registrado."
-
-        # Insertar el nuevo usuario en la tabla `usuario`
-        db.execute(text("""
-            INSERT INTO usuario (RUT, nombre, correo_electronico, contraseña, tipo_usuario)
-            VALUES (:rut, :nombre, :email, :password, :user_type)
-        """), {
-            'rut': rut_formateado,
-            'nombre': nombre,
-            'email': email,
-            'password': hashed_password,
-            'user_type': user_type
-        })
-
-        # Insertar en `alumno` o `tutor` según el tipo de usuario
-        user_table = "alumno" if user_type == "estudiante" else "tutor"
-        db.execute(text(f"INSERT INTO {user_table} (RUT) VALUES (:rut)"), {'rut': rut_formateado})
-
-        db.commit()
+        # Si el usuario es un estudiante, crear también una entrada en la tabla `alumno`
+        if tipo_usuario == 'estudiante':
+            db_session.execute(
+                text("""
+                    INSERT INTO alumno (RUT)
+                    VALUES (:rut)
+                """),
+                {'rut': rut}
+            )
+        
+        db_session.commit()
         return True, "Cuenta creada exitosamente"
-    
     except SQLAlchemyError as e:
-        db.rollback()
-        error_message = f"Error en la base de datos: {str(e)}"
-        print(error_message)
-        return False, error_message
-    
-    finally:
-        db.close()
+        db_session.rollback()
+        return False, f"Error al crear cuenta"
+

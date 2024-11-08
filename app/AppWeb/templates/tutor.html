@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Tutor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
+    <style>
+        /* Estilos de la página */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #4a3a87;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            padding: 20px;
+        }
+        .profile-card, .card {
+            background-color: #f8f9fc;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            transition: box-shadow 0.3s;
+        }
+        .profile-card:hover, .card:hover {
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+        }
+        .profile-card h2 {
+            margin: 0;
+            font-size: 26px;
+            color: #4a3a87;
+            text-align: center;
+        }
+        .profile-card p {
+            margin: 5px 0;
+            color: #555;
+            text-align: center;
+        }
+        h3 {
+            color: #4a3a87;
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid #4a3a87;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .btn-primary, .btn-secondary {
+            display: inline-block;
+            padding: 12px 25px;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary { background-color: #4a3a87; }
+        .btn-secondary { background-color: #28a745; }
+        .btn-primary:hover { background-color: #372b63; box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); }
+        .btn-secondary:hover { background-color: #218838; box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); }
+        .add-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            background-color: #4a3a87;
+            color: white;
+            border-radius: 50%;
+            font-size: 22px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .add-btn:hover { background-color: #372b63; }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            border-radius: 8px;
+            overflow: hidden;
+            font-size: 16px;
+        }
+        .table th, .table td {
+            padding: 14px 18px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .table th {
+            background-color: #4a3a87;
+            color: #fff;
+            font-weight: bold;
+        }
+        .table tr:nth-child(even) { background-color: #f8f9fc; }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 90%;
+            transition: box-shadow 0.3s;
+        }
+        .modal-content:hover { box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15); }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .close-btn {
+            cursor: pointer;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            font-weight: bold;
+            color: #555;
+            display: block;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        input[type="text"], input[type="date"], input[type="time"], select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="profile-card">
+            <h2>Bienvenido, {{ tutor.nombre }}</h2>
+            <p><strong>Correo:</strong> {{ tutor.correo_electronico }}</p>
+        </div>
+
+        <!-- Gestión de Tutorías -->
+        <div class="card">
+            <h3>Mis Tutorías <span class="add-btn" onclick="openCreateTutoriaModal()">+</span></h3>
+            {% if tutorias %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Materia</th>
+                            <th>Fecha</th>
+                            <th>Hora Inicio</th>
+                            <th>Hora Fin</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tutoria in tutorias %}
+                            <tr>
+                                <td>{{ tutoria.materia.nombre_materia }}</td>
+                                <td>{{ tutoria.fecha }}</td>
+                                <td>{{ tutoria.hora_inicio }}</td>
+                                <td>{{ tutoria.hora_fin }}</td>
+                                <td>
+                                    <button class="btn-secondary" onclick="editTutoria({{ tutoria.ID_tutoria }})">Editar</button>
+                                    <button class="btn-secondary" onclick="deleteTutoria({{ tutoria.ID_tutoria }})">Eliminar</button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No tienes tutorías programadas.</p>
+            {% endif %}
+        </div>
+
+        <!-- Gestión de Repositorio -->
+        <div class="card">
+            <h3>Repositorio <span class="add-btn" onclick="openAddRepositorioModal()">+</span></h3>
+            {% if repositorios %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Materia</th>
+                            <th>Contenido</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for repo in repositorios %}
+                            <tr>
+                                <td>{{ repo.materia.nombre_materia }}</td>
+                                <td>{{ repo.contenido }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No tienes contenido en el repositorio.</p>
+            {% endif %}
+        </div>
+
+        <!-- Gestión de Materias -->
+        <div class="card">
+            <h3>Materias <span class="add-btn" onclick="openCreateMateriaModal()">+</span></h3>
+            {% if materias %}
+                <ul>
+                    {% for materia in materias %}
+                        <li><strong>{{ materia.nombre_materia }}</strong>: {{ materia.descripcion }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No tienes materias registradas.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Modal para crear nueva tutoría -->
+    <div class="modal" id="createTutoriaModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4>Crear Nueva Tutoría</h4>
+                <span class="close-btn" onclick="closeCreateTutoriaModal()">&times;</span>
+            </div>
+            <form id="createTutoriaForm" onsubmit="submitCreateTutoria(event)">
+                <div class="form-group">
+                    <label for="materia_id">Materia</label>
+                    <select name="materia_id" id="materia_id" required>
+                        <option value="" disabled selected>Seleccione una materia</option>
+                        {% for materia in materias %}
+                            <option value="{{ materia.ID_materia }}">{{ materia.nombre_materia }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="fecha">Fecha</label>
+                    <input type="date" name="fecha" id="fecha" required>
+                </div>
+                <div class="form-group">
+                    <label for="hora_inicio">Hora de Inicio</label>
+                    <input type="time" name="hora_inicio" id="hora_inicio" required>
+                </div>
+                <div class="form-group">
+                    <label for="hora_fin">Hora de Fin</label>
+                    <input type="time" name="hora_fin" id="hora_fin" required>
+                </div>
+                <button type="submit" class="btn-primary">Crear Tutoría</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openCreateTutoriaModal() {
+            document.getElementById("createTutoriaModal").style.display = "flex";
+        }
+
+        function closeCreateTutoriaModal() {
+            document.getElementById("createTutoriaModal").style.display = "none";
+        }
+
+        function submitCreateTutoria(event) {
+            event.preventDefault();
+            const materiaId = document.getElementById("materia_id").value;
+            const fecha = document.getElementById("fecha").value;
+            const horaInicio = document.getElementById("hora_inicio").value;
+            const horaFin = document.getElementById("hora_fin").value;
+
+            fetch("{{ url_for('crear_tutoria') }}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ materia_id: materiaId, fecha: fecha, hora_inicio: horaInicio, hora_fin: horaFin, rut_tutor: "{{ tutor.RUT }}" })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Tutoría creada exitosamente.");
+                    closeCreateTutoriaModal();
+                    location.reload();
+                } else {
+                    alert("Error al crear tutoría: " + data.error);
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+
+        function deleteTutoria(tutoriaId) {
+            if (confirm("¿Está seguro de que desea eliminar esta tutoría?")) {
+                fetch(`/eliminar_tutoria/${tutoriaId}`, {
+                    method: "POST"
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("Tutoría eliminada exitosamente.");
+                        location.reload();
+                    } else {
+                        alert("Error al eliminar tutoría: " + data.error);
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+            }
+        }
+    </script>
+</body>
+</html>

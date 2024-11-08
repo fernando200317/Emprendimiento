@@ -4,31 +4,37 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='/styles/login.css') }}"> 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
 </head>
 <body>
-    <div class="login-container"> 
-        <div class="avatar">
-            <img src="{{ url_for('static', filename='/assets/images/avatar.png') }}" alt="Avatar">
-        </div>
+    <div class="form-container">
         <h2>Registro</h2>
-        <form class="login-form" method="post"> 
-            <div class="input-group">
-                <i class="fas fa-user"></i>
-                <input type="text" id="username" name="username" placeholder="Nombre de usuario" required>
-            </div>
-            <div class="input-group">
-                <i class="fas fa-envelope"></i>
-                <input type="email" id="email" name="email" placeholder="Correo electrónico" required>
-            </div>
-            <div class="input-group">
-                <i class="fas fa-lock"></i>
-                <input type="password" id="password" name="password" placeholder="Contraseña" required>
-            </div>
+
+        <!-- Mostrar mensajes flash -->
+        {% with messages = get_flashed_messages(with_categories=True) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <form method="post">
+            <input type="text" name="rut" placeholder="Rut" required>
+            <input type="text" name="username" placeholder="Nombre completo" required>
+            <input type="email" name="email" placeholder="Correo electrónico" required>
+            <input type="password" name="password" placeholder="Contraseña" required>
+            <select name="tipo_usuario" required>
+                <option value="">Tipo de usuario</option>
+                <option value="estudiante">Estudiante</option>
+                <option value="tutor">Tutor</option>
+            </select>
             <button type="submit">Registrarse</button>
         </form>
-        <p>¿Ya tienes una cuenta? <a href="{{ url_for('login') }}">Inicia sesión aquí</a></p> 
+
+        <p>¿Ya tienes una cuenta? <a href="{{ url_for('login') }}">Inicia sesión aquí</a></p>
     </div>
 </body>
 </html>

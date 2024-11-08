@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Inscribirse en Materia</title>
+</head>
+<body>
+    <h2>Materias Disponibles</h2>
+    <form method="post">
+        <select name="materia_id">
+            {% for materia in materias_disponibles %}
+                <option value="{{ materia.ID_materia }}">{{ materia.nombre_materia }} - {{ materia.descripcion }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Inscribirse</button>
+    </form>
+</body>
+</html>

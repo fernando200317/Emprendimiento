@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Tutorías Disponibles</title>
+</head>
+<body>
+    <h2>Tutorías Disponibles</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Día</th>
+                <th>Hora Inicio</th>
+                <th>Hora Fin</th>
+                <th>Tutor</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tutoria in tutorias %}
+                <tr>
+                    <td>{{ tutoria.fecha }}</td>
+                    <td>{{ tutoria.dia }}</td>
+                    <td>{{ tutoria.hora_inicio }}</td>
+                    <td>{{ tutoria.hora_fin }}</td>
+                    <td>{{ tutoria.tutor_nombre }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

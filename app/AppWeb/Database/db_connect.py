@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine, Column, String, Integer, ForeignKey, Time, Date, text
-from sqlalchemy.orm import relationship, declarative_base, sessionmaker
+from sqlalchemy.orm import relationship, declarative_base, sessionmaker, scoped_session
 from datetime import time, date
 
 # Configuración de conexión a la base de datos
@@ -10,23 +10,28 @@ engine = create_engine(f'mysql+pymysql://{config["user"]}:{config["password"]}@{
 with engine.connect() as conn:
     conn.execute(text(f"CREATE DATABASE IF NOT EXISTS {config['database_name']}"))
 
+# Definir la base de datos y la sesión
 Base = declarative_base()
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+db_session = scoped_session(SessionLocal)
 
+# Función para finalizar la sesión de SQLAlchemy
+def shutdown_session(exception=None):
+    db_session.remove()
+
+# Modelos de la base de datos
 class Usuario(Base):
     __tablename__ = "usuario"
-
     RUT = Column(String(12), primary_key=True, index=True)
     nombre = Column(String(100))
     correo_electronico = Column(String(100), unique=True)
     contraseña = Column(String(512))
     tipo_usuario = Column(String(100))
-
     tutor = relationship("Tutor", back_populates="usuario", uselist=False)
     alumno = relationship("Alumno", back_populates="usuario", uselist=False)
 
 class Tutor(Base):
     __tablename__ = "tutor"
-
     RUT = Column(String(12), ForeignKey("usuario.RUT"), primary_key=True)
     usuario = relationship("Usuario", back_populates="tutor")
     materias = relationship("Materia", secondary="tutor_materia", back_populates="tutores")
@@ -34,7 +39,6 @@ class Tutor(Base):
 
 class Alumno(Base):
     __tablename__ = "alumno"
-
     RUT = Column(String(12), ForeignKey("usuario.RUT"), primary_key=True)
     usuario = relationship("Usuario", back_populates="alumno")
     materias = relationship("Materia", secondary="alumno_materia", back_populates="alumnos")
@@ -42,11 +46,9 @@ class Alumno(Base):
 
 class Materia(Base):
     __tablename__ = "materia"
-
     ID_materia = Column(Integer, primary_key=True, index=True)
     nombre_materia = Column(String(100))
     descripcion = Column(String(100))
-
     tutores = relationship("Tutor", secondary="tutor_materia", back_populates="materias")
     alumnos = relationship("Alumno", secondary="alumno_materia", back_populates="materias")
     horarios = relationship("Horario", secondary="materia_horario", back_populates="materias")
@@ -55,24 +57,20 @@ class Materia(Base):
 
 class Horario(Base):
     __tablename__ = "horario"
-
     ID_horario = Column(Integer, primary_key=True, index=True)
     dia = Column(String(100))
     hora_inicio = Column(Time)
     hora_fin = Column(Time)
-
     materias = relationship("Materia", secondary="materia_horario", back_populates="horarios")
     tutorias = relationship("Tutoria", back_populates="horario")
 
 class Tutoria(Base):
     __tablename__ = "tutoria"
-
     ID_tutoria = Column(Integer, primary_key=True, index=True)
     RUT_tutor = Column(String(12), ForeignKey("tutor.RUT"))
     ID_horario = Column(Integer, ForeignKey("horario.ID_horario"))
     ID_materia = Column(Integer, ForeignKey("materia.ID_materia"))
     fecha = Column(Date)
-
     tutor = relationship("Tutor", back_populates="tutorias")
     alumnos = relationship("Alumno", secondary="alumno_tutoria", back_populates="tutorias")
     horario = relationship("Horario", back_populates="tutorias")
@@ -80,11 +78,9 @@ class Tutoria(Base):
 
 class Repositorio(Base):
     __tablename__ = "repositorio"
-
     ID_repositorio = Column(Integer, primary_key=True, index=True)
     ID_materia = Column(Integer, ForeignKey("materia.ID_materia"))
     contenido = Column(String(1000))
-
     materia = relationship("Materia", back_populates="repositorio")
 
 # Tablas intermedias para relaciones N:M
@@ -103,7 +99,6 @@ class MateriaHorario(Base):
     ID_materia = Column(Integer, ForeignKey("materia.ID_materia"), primary_key=True)
     ID_horario = Column(Integer, ForeignKey("horario.ID_horario"), primary_key=True)
 
-# Tabla intermedia para la relación muchos a muchos entre Alumno y Tutoria
 class AlumnoTutoria(Base):
     __tablename__ = "alumno_tutoria"
     RUT_alumno = Column(String(12), ForeignKey("alumno.RUT"), primary_key=True)
@@ -112,9 +107,6 @@ class AlumnoTutoria(Base):
 # Crear todas las tablas en la base de datos
 Base.metadata.create_all(engine)
 
-# Crear la sesión
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-db = SessionLocal()
 
 #Datos de prueba
 

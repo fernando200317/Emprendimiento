@@ -1,13 +1,14 @@
-from sqlalchemy import create_engine, text, MetaData
-from sqlalchemy.orm import sessionmaker
-from werkzeug.security import check_password_hash
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import sessionmaker, scoped_session
 import re
 
+# Configuración de conexión a la base de datos
 config = {'host': 'localhost', 'database_name': 'Tutoring', 'user': 'root', 'password': 'rootpass'}
 engine = create_engine(f'mysql+pymysql://{config["user"]}:{config["password"]}@{config["host"]}/{config["database_name"]}', echo=False)
-metadata = MetaData()
 
+# Crear el sessionmaker y la sesión de alcance
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+db_session = scoped_session(SessionLocal)
 
 def formatear_rut(rut):
     """Formatea el RUT para que tenga un formato estándar con guion."""
@@ -17,44 +18,19 @@ def formatear_rut(rut):
     return rut
 
 def check_password(rut, password):
-    db = SessionLocal()
-    try:
-        query = text("SELECT contraseña FROM usuario WHERE RUT = :rut")
-        result = db.execute(query, {'rut': rut})
-        hashed_password_row = result.fetchone()
+    """Verificación de contraseña en la base de datos sin hash."""
+    rut = formatear_rut(rut)  # Asegurar que el RUT esté formateado
+    query = text("SELECT contraseña FROM usuario WHERE RUT = :rut")
+    result = db_session.execute(query, {'rut': rut}).fetchone()
+    return result and result[0] == password
 
-        if hashed_password_row is None:
-            print("Usuario no encontrado")
-            return False
+def obtener_tipo_usuario(rut):
+    """Obtiene el tipo de usuario (tutor o alumno) basado en el RUT."""
+    rut = formatear_rut(rut)  # Asegurar que el RUT esté formateado
+    query = text("SELECT tipo_usuario FROM usuario WHERE RUT = :rut")
+    result = db_session.execute(query, {'rut': rut}).fetchone()
+    return result[0] if result else None
 
-        hashed_password = hashed_password_row[0]
-        print(f"Hashed password from DB: {hashed_password}")  # Imprimir el hash recuperado
-        print(f"Entered password: {password}")
-
-        # Comprobar la contraseña usando `check_password_hash`
-        if check_password_hash(hashed_password, password):
-            print("La contraseña es correcta")
-            return True
-        else:
-            print("La contraseña es incorrecta")
-            return False
-
-    except Exception as e:
-        print(f"Error en check_password: {e}")
-        return False
-
-    finally:
-        db.close()
-
-def obtener_informacion_estudiante(rut_alumno):
-    """Obtiene la información del estudiante y sus materias."""
-    try:
-        alumno = db.session.query(alumno).filter_by(RUT=rut_alumno).first()
-        if alumno is None:
-            return None
-        usuario = alumno.usuario
-        materias_alumno = alumno.materias
-        return usuario.nombre, usuario.RUT, usuario.correo_electronico, materias_alumno
-    except Exception as e:
-        print(f"Error al obtener información del estudiante: {e}")
-        return None
+# Función para cerrar la sesión al final de cada solicitud
+def shutdown_session(exception=None):
+    db_session.remove()
