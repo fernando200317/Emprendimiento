@@ -320,22 +320,19 @@ def detalle_tutoria(materia_id):
 def panel_tutor():
     if 'tipo_usuario' in session and session['tipo_usuario'] == 'tutor':
         rut = session['rut']
+        
+        # Get tutor information
         tutor = db_session.execute(
             text("SELECT nombre, correo_electronico FROM usuario WHERE RUT = :rut"),
             {'rut': rut}
         ).fetchone()
-
-        # Obtener las materias del tutor
+        
+        # Get all subjects for the dropdown
         materias = db_session.execute(
-            text("""
-                SELECT m.ID_materia, m.nombre_materia, m.descripcion
-                FROM materia m
-                JOIN tutor_materia tm ON m.ID_materia = tm.ID_materia
-                WHERE tm.RUT_tutor = :rut
-            """), {'rut': rut}
+            text("SELECT ID_materia, nombre_materia, descripcion FROM materia")
         ).fetchall()
 
-        # Obtener las tutorías programadas del tutor
+        # Retrieve tutor's scheduled sessions
         tutorias = db_session.execute(
             text("""
                 SELECT t.ID_tutoria, t.fecha, h.hora_inicio, h.hora_fin, m.nombre_materia
@@ -346,15 +343,13 @@ def panel_tutor():
             """), {'rut': rut}
         ).fetchall()
 
-        # Obtener los repositorios de materias
+        # Retrieve the repository entries for subjects
         repositorios = db_session.execute(
             text("""
                 SELECT r.ID_repositorio, m.nombre_materia, r.contenido
                 FROM repositorio r
                 JOIN materia m ON r.ID_materia = m.ID_materia
-                JOIN tutor_materia tm ON m.ID_materia = tm.ID_materia
-                WHERE tm.RUT_tutor = :rut
-            """), {'rut': rut}
+            """)
         ).fetchall()
 
         return render_template('panel_tutor.html', tutor=tutor, materias=materias, tutorias=tutorias, repositorios=repositorios)
@@ -362,32 +357,76 @@ def panel_tutor():
     flash("Acceso denegado: no tienes permiso para ver esta página", "danger")
     return redirect(url_for('inicio'))
 
-# Crear nueva tutoría
-@app.route('/crear_tutoria', methods=['POST'])
+@app.route('/crear_tutoria', methods=['GET', 'POST'])
 def crear_tutoria():
-    data = request.get_json()
-    materia_id = data.get('materia_id')
-    fecha = data.get('fecha')
-    hora_inicio = data.get('hora_inicio')
-    hora_fin = data.get('hora_fin')
-    rut_tutor = session.get('rut')
+    rut_tutor = session.get('rut')  # Ensure 'rut' is in session
+    
+    # Get enrolled "materias" by this tutor
+    inscritas_ids = db_session.execute(
+        text("SELECT ID_materia FROM tutor_materia WHERE RUT_tutor = :rut_tutor"),
+        {'rut_tutor': rut_tutor}
+    ).fetchall()
 
-    if not materia_id or not fecha or not hora_inicio or not hora_fin:
-        return jsonify(success=False, error="Datos incompletos para crear la tutoría")
+    # Extract just the IDs from the result
+    inscritas_ids = [materia.ID_materia for materia in inscritas_ids]
 
-    try:
-        db_session.execute(
+    # Fetch available "materias" not already enrolled by the tutor
+    if inscritas_ids:
+        materias_disponibles = db_session.execute(
             text("""
-                INSERT INTO tutoria (RUT_tutor, ID_materia, fecha, hora_inicio, hora_fin)
-                VALUES (:rut_tutor, :materia_id, :fecha, :hora_inicio, :hora_fin)
-            """), {'rut_tutor': rut_tutor, 'materia_id': materia_id, 'fecha': fecha,
-                    'hora_inicio': hora_inicio, 'hora_fin': hora_fin}
-        )
-        db_session.commit()
-        return jsonify(success=True)
-    except SQLAlchemyError as e:
-        db_session.rollback()
-        return jsonify(success=False, error=str(e))
+                SELECT ID_materia, nombre_materia, descripcion 
+                FROM materia 
+                WHERE ID_materia NOT IN :inscritas_ids
+            """), {'inscritas_ids': tuple(inscritas_ids)}
+        ).fetchall()
+    else:
+        materias_disponibles = db_session.execute(
+            text("SELECT ID_materia, nombre_materia, descripcion FROM materia")
+        ).fetchall()
+
+    if request.method == 'POST':
+        # Get data from the form submission
+        materia_id = request.form.get('materia_id')
+        fecha = request.form.get('fecha')
+        hora_inicio = request.form.get('hora_inicio')
+        hora_fin = request.form.get('hora_fin')
+
+        # Validate required fields
+        if not materia_id or not fecha or not hora_inicio or not hora_fin:
+            flash("Datos incompletos para crear la tutoría", "danger")
+            return redirect(url_for('panel_tutor'))
+
+        try:
+            # Parse date and time fields into appropriate formats
+            fecha = datetime.strptime(fecha, '%Y-%m-%d').date()
+            hora_inicio = datetime.strptime(hora_inicio, '%H:%M').time()
+            hora_fin = datetime.strptime(hora_fin, '%H:%M').time()
+
+            # Insert the new tutoria into the database
+            db_session.execute(
+                text("""
+                    INSERT INTO tutoria (RUT_tutor, ID_materia, fecha, hora_inicio, hora_fin)
+                    VALUES (:rut_tutor, :materia_id, :fecha, :hora_inicio, :hora_fin)
+                """), {
+                    'rut_tutor': rut_tutor,
+                    'materia_id': materia_id,
+                    'fecha': fecha,
+                    'hora_inicio': hora_inicio,
+                    'hora_fin': hora_fin
+                }
+            )
+            db_session.commit()
+            flash("Tutoría creada exitosamente", "success")
+        except SQLAlchemyError as e:
+            db_session.rollback()
+            flash(f"Error al crear tutoría: {str(e)}", "danger")
+
+        # Redirect back to the tutor panel
+        return redirect(url_for('panel_tutor'))
+    
+    # If GET request, render the form with available "materias"
+    return render_template('panel_tutor.html', materias_disponibles=materias_disponibles)
+
 
 @app.route('/crear_materia_ajax', methods=['POST'])
 def crear_materia_ajax():

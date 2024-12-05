@@ -246,13 +246,13 @@
                 <h4>Crear Nueva Tutoría</h4>
                 <span class="close-btn" onclick="closeCreateTutoriaModal()">&times;</span>
             </div>
-            <form id="createTutoriaForm" onsubmit="submitCreateTutoria(event)">
+            <form method="post" action="{{ url_for('crear_tutoria') }}">
                 <div class="form-group">
-                    <label for="materia_id">Materia</label>
-                    <select name="materia_id" id="materia_id" required>
+                    <label for="ID_materia">Materia</label>
+                    <select name="materia_id" id="ID_materia" required>
                         <option value="" disabled selected>Seleccione una materia</option>
-                        {% for materia in materias %}
-                            <option value="{{ materia.ID_materia }}">{{ materia.nombre_materia }}</option>
+                        {% for materia in materias_disponibles %}
+                            <option value="{{ materia.ID_materia }}">{{ materia.nombre_materia }} - {{ materia.descripcion }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -284,15 +284,24 @@
 
         function submitCreateTutoria(event) {
             event.preventDefault();
-            const materiaId = document.getElementById("materia_id").value;
+    
+            // Get values from the form
+            const materiaId = document.getElementById("ID_materia").value;
             const fecha = document.getElementById("fecha").value;
             const horaInicio = document.getElementById("hora_inicio").value;
             const horaFin = document.getElementById("hora_fin").value;
 
+            // Send the form data to the backend
             fetch("{{ url_for('crear_tutoria') }}", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ materia_id: materiaId, fecha: fecha, hora_inicio: horaInicio, hora_fin: horaFin, rut_tutor: "{{ tutor.RUT }}" })
+                body: JSON.stringify({
+                    materia_id: materiaId,
+                    fecha: fecha,
+                    hora_inicio: horaInicio,
+                    hora_fin: horaFin,
+                    rut_tutor: "{{ tutor.RUT }}"
+                })
             })
             .then(response => response.json())
             .then(data => {

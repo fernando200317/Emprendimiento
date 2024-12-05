@@ -6,7 +6,7 @@
 
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
+    background-color: #4a3a87; /* Fondo morado oscuro */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -25,12 +25,13 @@ body {
 
 h1, h2 {
     margin-bottom: 1em;
+    color: #4a3a87; /* Morado oscuro */
 }
 
 button {
     width: 100%;
     padding: 1em;
-    background-color: #007bff;
+    background-color: #4a3a87; /* Botón morado oscuro */
     color: #fff;
     border: none;
     border-radius: 4px;
@@ -39,7 +40,7 @@ button {
 }
 
 button:hover {
-    background-color: #0056b3;
+    background-color: #372b63; /* Morado más oscuro */
 }
 
 input, select {
@@ -51,7 +52,7 @@ input, select {
 }
 
 a {
-    color: #007bff;
+    color: #4a3a87; /* Morado oscuro */
     text-decoration: none;
 }
 .flash-messages {
@@ -67,18 +68,19 @@ a {
 }
 
 .flash-message.success {
-    background-color: #4CAF50;
+    background-color: #28a745; /* Verde */
 }
 
 .flash-message.danger {
-    background-color: #f44336;
+    background-color: #f44336; /* Rojo */
 }
+
 .btn-inscribir {
     display: inline-block;
     margin: 10px 0;
     padding: 10px 20px;
     color: #fff;
-    background-color: #007BFF;
+    background-color: #4a3a87; /* Morado oscuro */
     text-decoration: none;
     border-radius: 5px;
     font-weight: bold;
@@ -86,5 +88,5 @@ a {
 }
 
 .btn-inscribir:hover {
-    background-color: #0056b3;
+    background-color: #372b63; /* Morado más oscuro */
 }
